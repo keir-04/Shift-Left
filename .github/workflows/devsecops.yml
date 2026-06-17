@@ -1,0 +1,119 @@
+name: Shift Left DevSecOps Pipeline
+
+
+on:
+
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+
+
+jobs:
+
+
+# ===============================
+# Secret Scanning - Gitleaks
+# ===============================
+
+  gitleaks:
+
+    name: Secret Scan - Gitleaks
+
+    runs-on: ubuntu-latest
+
+
+    steps:
+
+
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+
+
+      - name: Run Gitleaks Scanner
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+
+# ===============================
+# Static Application Security Test
+# Semgrep SAST
+# ===============================
+
+
+  semgrep:
+
+
+    name: SAST Scan - Semgrep
+
+
+    runs-on: ubuntu-latest
+
+
+    steps:
+
+
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+
+
+      - name: Run Semgrep Security Scan
+
+        uses: semgrep/semgrep-action@v1
+
+        with:
+
+          config: >-
+
+            p/security-audit
+
+            p/javascript
+
+
+
+
+# ===============================
+# Dependency Scanning - Trivy
+# ===============================
+
+
+  trivy:
+
+
+    name: Dependency Scan - Trivy
+
+
+    runs-on: ubuntu-latest
+
+
+    steps:
+
+
+      - name: Checkout Source Code
+
+        uses: actions/checkout@v4
+
+
+
+      - name: Run Trivy Vulnerability Scanner
+
+        uses: aquasecurity/trivy-action@master
+
+
+        with:
+
+          scan-type: fs
+
+          scan-ref: .
+
+          format: tableo
