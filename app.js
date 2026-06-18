@@ -13,10 +13,10 @@ app.use(express.json());
 // Detected by: Gitleaks
 // =================================
 
-const AWS_ACCESS_KEY_ID = "AKIAIOSFODNN7EXAMPLE";
-const AWS_SECRET_ACCESS_KEY =
-  "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY";
+const aws_access_key_id = "AKIA1234567890ABCDEF";
 
+const aws_secret_access_key =
+"abcdEFGH1234567890abcdEFGH1234567890abcdEF";
 
 // =================================
 // Database Setup
