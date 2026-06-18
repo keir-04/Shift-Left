@@ -16,14 +16,14 @@ on:
 jobs:
 
 
-# =====================
-# Secret Detection
-# =====================
+# ==============================
+# GITLEAKS SECRET SCANNING
+# ==============================
 
 
   gitleaks:
 
-    name: Secret Scan - Gitleaks
+    name: Secret Detection - Gitleaks
 
     runs-on: ubuntu-latest
 
@@ -31,54 +31,30 @@ jobs:
     steps:
 
 
-      - name: Checkout Repository
+      - name: Checkout Code
         uses: actions/checkout@v4
-
-
-
-      - name: Install Gitleaks
-
-        run: |
-
-          wget https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks_8.28.0_linux_x64.tar.gz
-
-          tar -xzf gitleaks_8.28.0_linux_x64.tar.gz
 
 
 
       - name: Run Gitleaks
 
-        run: |
+        uses: gitleaks/gitleaks-action@v2
 
-          ./gitleaks detect \
-          --source . \
-          --report-format json \
-          --report-path gitleaks-report.json || true
+        env:
 
-
-
-      - name: Upload Gitleaks Report
-
-        uses: actions/upload-artifact@v4
-
-        with:
-
-          name: gitleaks-report
-
-          path: gitleaks-report.json
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
 
-
-# =====================
-# SAST SCANNING
-# =====================
+# ==============================
+# SEMGREP SAST
+# ==============================
 
 
   semgrep:
 
 
-    name: SAST Scan - Semgrep
+    name: Source Code Scan - Semgrep
 
 
     runs-on: ubuntu-latest
@@ -87,7 +63,7 @@ jobs:
     steps:
 
 
-      - name: Checkout Repository
+      - name: Checkout Code
 
         uses: actions/checkout@v4
 
@@ -95,13 +71,14 @@ jobs:
 
       - name: Run Semgrep
 
-        uses: semgrep/semgrep-action@v1
+        run: |
 
-        with:
+          python -m pip install semgrep
 
-          config: p/javascript
-
-          generateSarif: "1"
+          semgrep scan \
+          --config p/javascript \
+          --json \
+          --output semgrep-report.json || true
 
 
 
@@ -111,17 +88,17 @@ jobs:
 
         with:
 
-          name: semgrep-report
+          name: semgrep-security-report
 
-          path: semgrep.sarif
-
-
+          path: semgrep-report.json
 
 
 
-# =====================
-# Dependency Scanning
-# =====================
+
+
+# ==============================
+# TRIVY DEPENDENCY SCAN
+# ==============================
 
 
   trivy:
@@ -136,13 +113,13 @@ jobs:
     steps:
 
 
-      - name: Checkout Repository
+      - name: Checkout Code
 
         uses: actions/checkout@v4
 
 
 
-      - name: Run Trivy
+      - name: Run Trivy Scanner
 
         uses: aquasecurity/trivy-action@master
 
@@ -164,6 +141,6 @@ jobs:
 
         with:
 
-          name: trivy-report
+          name: trivy-security-report
 
           path: trivy-report.json
