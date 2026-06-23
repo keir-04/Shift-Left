@@ -1,153 +1,196 @@
 const express = require("express");
 const sqlite3 = require("sqlite3").verbose();
 const lodash = require("lodash");
+require("dotenv").config();
+
 
 const app = express();
+
 
 app.use(express.json());
 
 
-// =================================
-// Intentional Vulnerability #1
-// Hardcoded Fake AWS Secret Key
-// Detected by: Gitleaks
-// =================================
+// =============================
+// Secure Secret Management
+// =============================
 
-const aws_access_key_id = "AKIA1234567890ABCDEF";
+const AWS_ACCESS_KEY_ID =
+process.env.AWS_ACCESS_KEY_ID;
 
-const aws_secret_access_key =
-"abcdEFGH1234567890abcdEFGH1234567890abcdEF";
 
-// =================================
+const AWS_SECRET_ACCESS_KEY =
+process.env.AWS_SECRET_ACCESS_KEY;
+
+
+// =============================
 // Database Setup
-// =================================
-
-const db = new sqlite3.Database(":memory:");
-
-db.serialize(() => {
-
-    db.run(
-        "CREATE TABLE users(id INTEGER PRIMARY KEY, username TEXT, password TEXT)"
-    );
+// =============================
 
 
-    db.run(
-        "INSERT INTO users(username,password) VALUES('admin','admin123')"
-    );
+const db =
+new sqlite3.Database(":memory:");
 
 
-    db.run(
-        "INSERT INTO users(username,password) VALUES('test','test123')"
-    );
+
+db.serialize(()=>{
+
+
+db.run(
+"CREATE TABLE users(id INTEGER PRIMARY KEY, username TEXT, password TEXT)"
+);
+
+
+
+db.run(
+"INSERT INTO users(username,password) VALUES(?,?)",
+["admin","admin123"]
+);
+
+
+db.run(
+"INSERT INTO users(username,password) VALUES(?,?)",
+["test","test123"]
+);
+
 
 });
 
 
-// =================================
-// Normal API Route
-// =================================
 
-app.get("/", (req,res)=>{
 
-    res.json({
-        message:
-        "Shift Left DevSecOps Demo Application Running"
-    });
+// =============================
+// Home Route
+// =============================
+
+
+app.get("/",(req,res)=>{
+
+
+res.json({
+
+message:
+"Secure Shift Left DevSecOps Application Running"
 
 });
 
 
-// =================================
-// Normal Users Route
-// =================================
+});
+
+
+
+
+// =============================
+// Users Route
+// =============================
+
 
 app.get("/users",(req,res)=>{
 
-    db.all(
-        "SELECT id,username FROM users",
-        [],
-        (err,rows)=>{
 
-            res.json(rows);
+db.all(
 
-        }
-    );
+"SELECT id,username FROM users",
+
+[],
+
+(err,rows)=>{
+
+
+res.json(rows);
+
+
+});
+
 
 });
 
 
 
-// =================================
-// Intentional Vulnerability #2
-// SQL Injection Vulnerability
+
+// =============================
+// SECURE Login Route
 //
-// Example Attack:
-// /login?username=admin' OR '1'='1
-//
-// Detected by: Semgrep
-// =================================
+// SQL Injection Fixed
+// Parameterized Query
+// =============================
+
 
 
 app.get("/login",(req,res)=>{
 
 
-    let username = req.query.username;
+let username =
+req.query.username;
 
 
-    let query =
-    "SELECT * FROM users WHERE username='" 
-    + username 
-    + "'";
+
+let query =
+"SELECT * FROM users WHERE username=?";
 
 
-    console.log(
-        "Executing:",
-        query
-    );
+
+db.all(
+
+query,
+
+[username],
+
+(err,result)=>{
 
 
-    db.all(
-        query,
-        (err,result)=>{
+if(err){
 
 
-            if(err){
+return res.status(500)
+.json({
 
-                return res.status(500)
-                .json({
-                    error:err.message
-                });
+error:
+err.message
 
-            }
-
-
-            res.json({
-
-                message:
-                "Login Search Completed",
-
-                result:result
-
-            });
+});
 
 
-        }
-    );
+}
+
+
+
+res.json({
+
+
+message:
+"Secure Query Completed",
+
+
+result:
+result
 
 
 });
 
 
 
-// =================================
-// Start Server
-// =================================
+});
+
+
+});
+
+
+
+
+// =============================
+// Server
+// =============================
+
 
 
 app.listen(3000,()=>{
 
-    console.log(
-        "Server running on http://localhost:3000"
-    );
+
+console.log(
+
+"Secure server running on http://localhost:3000"
+
+);
+
 
 });
