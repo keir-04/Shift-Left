@@ -253,3 +253,43 @@ jobs:
           name: zap-security-report
 
           path: report_html.html
+# ============================
+# SBOM GENERATION - SUPPLY CHAIN
+# ============================
+
+  sbom-security:
+
+    name: SBOM Generation - Syft
+
+    runs-on: ubuntu-latest
+
+
+    steps:
+
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+
+      - name: Install Syft
+
+        uses: anchore/sbom-action/download-syft@v0
+
+
+      - name: Generate CycloneDX SBOM
+
+        run: |
+
+          syft . \
+          -o cyclonedx-json \
+          > sbom.json
+
+
+      - name: Upload SBOM Report
+
+        uses: actions/upload-artifact@v4
+
+        with:
+
+          name: software-bill-of-materials
+
+          path: sbom.json
