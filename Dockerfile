@@ -1,13 +1,6 @@
 FROM node:24-alpine3.24
 
-
 WORKDIR /app
-
-
-# Update npm and vulnerable bundled dependencies
-RUN npm install -g npm@latest && \
-    npm install -g undici@latest && \
-    npm cache clean --force
 
 
 COPY package*.json ./
@@ -17,6 +10,13 @@ RUN npm ci --omit=dev
 
 
 COPY . .
+
+
+# Remove npm after installing dependencies
+# Runtime container only needs node
+RUN rm -rf /usr/local/lib/node_modules/npm && \
+    rm -rf /usr/local/bin/npm && \
+    rm -rf /usr/local/bin/npx
 
 
 RUN addgroup -S appgroup && \
