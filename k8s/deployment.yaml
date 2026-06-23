@@ -1,0 +1,95 @@
+apiVersion: apps/v1
+
+kind: Deployment
+
+
+metadata:
+
+  name: shift-left-app
+
+  namespace: production
+
+
+spec:
+
+  replicas: 2
+
+
+  selector:
+
+    matchLabels:
+
+      app: shift-left
+
+
+  template:
+
+    metadata:
+
+      labels:
+
+        app: shift-left
+
+
+    spec:
+
+
+      securityContext:
+
+        runAsNonRoot: true
+
+        runAsUser: 10001
+
+        runAsGroup: 10001
+
+
+        seccompProfile:
+
+          type: RuntimeDefault
+
+
+      containers:
+
+
+        - name: shift-left-container
+
+
+          image: shift-left-app:v1.0.0
+
+
+          ports:
+
+            - containerPort: 3000
+
+
+          securityContext:
+
+
+            allowPrivilegeEscalation: false
+
+
+            readOnlyRootFilesystem: true
+
+
+            capabilities:
+
+              drop:
+
+                - ALL
+
+
+          resources:
+
+
+            requests:
+
+              memory: "128Mi"
+
+              cpu: "100m"
+
+
+            limits:
+
+              memory: "256Mi"
+
+              cpu: "500m"

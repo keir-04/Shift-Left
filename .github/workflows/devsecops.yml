@@ -372,3 +372,41 @@ jobs:
           name: devsecops-security-report
 
           path: reports/security-report.md
+
+
+# ===============================
+# KUBERNETES SECURITY SCANNING
+# ===============================
+
+  kubernetes-security:
+
+    name: Kubernetes Security Gate
+
+
+    runs-on: ubuntu-latest
+
+
+    steps:
+
+      - name: Checkout Code
+
+        uses: actions/checkout@v4
+
+
+
+      - name: Scan Kubernetes Configuration
+
+        uses: aquasecurity/trivy-action@master
+
+
+        with:
+
+          scan-type: config
+
+          scan-ref: k8s/
+
+
+          severity: HIGH,CRITICAL
+
+
+          exit-code: 1
