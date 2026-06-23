@@ -1,0 +1,146 @@
+name: Shift Left DevSecOps Pipeline
+
+
+on:
+
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+
+
+jobs:
+
+
+# ==============================
+# GITLEAKS SECRET SCANNING
+# ==============================
+
+
+  gitleaks:
+
+    name: Secret Detection - Gitleaks
+
+    runs-on: ubuntu-latest
+
+
+    steps:
+
+
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+
+
+      - name: Run Gitleaks
+
+        uses: gitleaks/gitleaks-action@v2
+
+        env:
+
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+
+# ==============================
+# SEMGREP SAST
+# ==============================
+
+
+  semgrep:
+
+
+    name: Source Code Scan - Semgrep
+
+
+    runs-on: ubuntu-latest
+
+
+    steps:
+
+
+      - name: Checkout Code
+
+        uses: actions/checkout@v4
+
+
+
+      - name: Run Semgrep
+
+        run: |
+
+          python -m pip install semgrep
+
+          semgrep scan \
+          --config p/javascript \
+          --json \
+          --output semgrep-report.json || true
+
+
+
+      - name: Upload Semgrep Report
+
+        uses: actions/upload-artifact@v4
+
+        with:
+
+          name: semgrep-security-report
+
+          path: semgrep-report.json
+
+
+
+
+
+# ==============================
+# TRIVY DEPENDENCY SCAN
+# ==============================
+
+
+  trivy:
+
+
+    name: Dependency Scan - Trivy
+
+
+    runs-on: ubuntu-latest
+
+
+    steps:
+
+
+      - name: Checkout Code
+
+        uses: actions/checkout@v4
+
+
+
+      - name: Run Trivy Scanner
+
+        uses: aquasecurity/trivy-action@master
+
+        with:
+
+          scan-type: fs
+
+          scan-ref: .
+
+          format: json
+
+          output: trivy-report.json
+
+
+
+      - name: Upload Trivy Report
+
+        uses: actions/upload-artifact@v4
+
+        with:
+
+          name: trivy-security-report
+
+          path: trivy-report.json
