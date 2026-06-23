@@ -1,10 +1,12 @@
 FROM node:24-alpine3.24
 
+
 WORKDIR /app
 
 
-# Update npm bundled dependencies
+# Update npm and vulnerable bundled dependencies
 RUN npm install -g npm@latest && \
+    npm install -g undici@latest && \
     npm cache clean --force
 
 
