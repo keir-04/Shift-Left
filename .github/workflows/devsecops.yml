@@ -138,3 +138,51 @@ jobs:
           ignore-unfixed: true
 
           exit-code: 1
+
+
+# ============================
+# CONTAINER SECURITY GATE
+# ============================
+
+
+  container-security:
+
+
+    name: Container Security Gate - Trivy
+
+
+    runs-on: ubuntu-latest
+
+
+
+    steps:
+
+
+      - name: Checkout Code
+
+        uses: actions/checkout@v4
+
+
+
+      - name: Build Docker Image
+
+        run: |
+
+          docker build -t shift-left-app .
+
+
+
+      - name: Scan Docker Image
+
+        uses: aquasecurity/trivy-action@master
+
+
+        with:
+
+          image-ref: shift-left-app
+
+          severity: HIGH,CRITICAL
+
+          exit-code: 1
+
+          ignore-unfixed: true
