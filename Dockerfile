@@ -1,38 +1,15 @@
-# Secure lightweight Node image
-
-FROM node:22-alpine
-
-
-# Create application directory
+FROM node:24-alpine
 
 WORKDIR /app
 
-
-# Copy dependency files
+RUN npm install -g npm@latest
 
 COPY package*.json ./
 
-
-# Install production dependencies
-
-RUN npm ci --only=production
-
-
-# Copy source code
+RUN npm ci --omit=dev
 
 COPY . .
 
-
-# Create non-root user
-
-RUN addgroup -S appgroup && \
-    adduser -S appuser -G appgroup
-
-
-USER appuser
-
-
 EXPOSE 3000
 
-
-CMD ["npm","start"]
+CMD ["node", "app.js"]
