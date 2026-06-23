@@ -1,22 +1,7 @@
-# Node dependencies
 node_modules/
 
-
-# Environment variables
 .env
-.env.local
 
-
-# Logs
-logs/
 *.log
-npm-debug.log
 
-
-# Reports generated locally
-reports/
-
-
-# System files
-.DS_Store
-Thumbs.db
+reports/*.tmp
