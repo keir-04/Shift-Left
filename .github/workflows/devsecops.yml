@@ -1,4 +1,4 @@
-name: Shift Left DevSecOps Pipeline
+name: Shift Left Security Gate Pipeline
 
 
 on:
@@ -16,14 +16,13 @@ on:
 jobs:
 
 
-# ==============================
-# GITLEAKS SECRET SCANNING
-# ==============================
-
+# ============================
+# SECRET SECURITY GATE
+# ============================
 
   gitleaks:
 
-    name: Secret Detection - Gitleaks
+    name: Secret Gate - Gitleaks
 
     runs-on: ubuntu-latest
 
@@ -32,7 +31,12 @@ jobs:
 
 
       - name: Checkout Code
+
         uses: actions/checkout@v4
+
+        with:
+
+          fetch-depth: 0
 
 
 
@@ -46,18 +50,21 @@ jobs:
 
 
 
-# ==============================
-# SEMGREP SAST
-# ==============================
+
+
+# ============================
+# SAST SECURITY GATE
+# ============================
 
 
   semgrep:
 
 
-    name: Source Code Scan - Semgrep
+    name: Code Security Gate - Semgrep
 
 
     runs-on: ubuntu-latest
+
 
 
     steps:
@@ -69,45 +76,40 @@ jobs:
 
 
 
-      - name: Run Semgrep
+      - name: Install Semgrep
 
         run: |
 
           python -m pip install semgrep
 
+
+
+      - name: Run Semgrep Security Gate
+
+        run: |
+
           semgrep scan \
+          --config p/security-audit \
           --config p/javascript \
-          --json \
-          --output semgrep-report.json || true
-
-
-
-      - name: Upload Semgrep Report
-
-        uses: actions/upload-artifact@v4
-
-        with:
-
-          name: semgrep-security-report
-
-          path: semgrep-report.json
+          --error
 
 
 
 
 
-# ==============================
-# TRIVY DEPENDENCY SCAN
-# ==============================
+# ============================
+# DEPENDENCY SECURITY GATE
+# ============================
 
 
   trivy:
 
 
-    name: Dependency Scan - Trivy
+    name: Dependency Security Gate - Trivy
 
 
     runs-on: ubuntu-latest
+
 
 
     steps:
@@ -119,9 +121,11 @@ jobs:
 
 
 
-      - name: Run Trivy Scanner
+      - name: Run Trivy Security Gate
+
 
         uses: aquasecurity/trivy-action@master
+
 
         with:
 
@@ -129,18 +133,8 @@ jobs:
 
           scan-ref: .
 
-          format: json
+          severity: HIGH,CRITICAL
 
-          output: trivy-report.json
+          ignore-unfixed: true
 
-
-
-      - name: Upload Trivy Report
-
-        uses: actions/upload-artifact@v4
-
-        with:
-
-          name: trivy-security-report
-
-          path: trivy-report.json
+          exit-code: 1
