@@ -1,5 +1,6 @@
 const express = require("express");
 const sqlite3 = require("sqlite3").verbose();
+const helmet = require("helmet");
 require("dotenv").config();
 
 
@@ -7,7 +8,22 @@ const app = express();
 
 
 app.use(express.json());
+app.disable("x-powered-by");
 
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        objectSrc: ["'none'"]
+      }
+    },
+    crossOriginResourcePolicy: {
+      policy: "same-origin"
+    }
+  })
+);
 
 // =============================
 // Secure Secret Management
